@@ -44,6 +44,49 @@ MCP server for accessing Amazon Bedrock Knowledge Bases
    - Access data sources
    - Query knowledge bases
 
+#### Required IAM Permissions
+
+The following IAM permissions are required for the MCP server to function properly:
+
+```json
+{
+  "Version": "2012-10-17",
+  "Statement": [
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock:ListFoundationModels",
+        "bedrock:GetFoundationModel",
+        "bedrock:InvokeModel",
+        "bedrock:InvokeModelWithResponseStream"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock-agent:ListKnowledgeBases",
+        "bedrock-agent:GetKnowledgeBase",
+        "bedrock-agent:ListDataSources",
+        "bedrock-agent:ListTagsForResource",
+        "bedrock-agent:RetrieveAndGenerate"
+      ],
+      "Resource": "*"
+    },
+    {
+      "Effect": "Allow",
+      "Action": [
+        "bedrock-agent-runtime:Retrieve",
+        "bedrock-agent-runtime:RetrieveAndGenerate"
+      ],
+      "Resource": "*"
+    }
+  ]
+}
+```
+
+These permissions are automatically configured in the `application.yaml` file when deploying the MCP server.
+
 ### Reranking Requirements
 
 If you intend to use reranking functionality, your Bedrock Knowledge Base needs additional permissions:
@@ -136,6 +179,21 @@ AWS_SESSION_TOKEN=AQoEXAMPLEH4aoAH0gNCAPy...truncated...zrkuWJOgQs8IZZaIv2BXIa2R
 ```
 
 NOTE: Your credentials will need to be kept refreshed from your host
+
+## Deployment
+
+When deploying the MCP server using the provided `application.yaml` file, the following configurations are automatically applied:
+
+1. **Service Account**: A dedicated service account named `bedrock-kb-retrieval-sa` is created for the MCP server.
+2. **IAM Permissions**: The necessary IAM permissions for accessing Amazon Bedrock Knowledge Base are automatically attached to the service account.
+3. **Configuration**: The server uses a ConfigMap named `bedrock-kb-config` for configuration, which includes:
+   - `aws-region`: Set to `us-west-2` by default
+   - `bedrock-kb-reranking-enabled`: Controls whether reranking is enabled
+   - `kb-inclusion-tag-key`: Defines the tag key used to filter knowledge bases
+
+This configuration approach is compatible with OAM and KubeVela, providing a more robust way to manage configuration compared to environment variables.
+
+You can customize these settings by modifying the `application.yaml` file in the `deployment/dev` directory.
 
 ## Limitations
 

@@ -1,0 +1,21 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: core-mcp-server
+spec:
+  components:
+    - name: core-mcp-server 
+      type: appmod-service
+      properties:
+        image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/mcp/core-mcp-server:latest
+        image_name: core-mcp-server
+        port: 8080
+        targetPort: 8080
+        replicas: 1
+      traits: 
+        - type: path-based-ingress
+          properties:
+            domain: "*.elb.us-west-2.amazonaws.com"
+            rewritePath: true 
+            http:
+              /core: 8080

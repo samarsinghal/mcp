@@ -1,0 +1,32 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: git-repo-research-mcp-server
+spec:
+  components:
+    - name: git-repo-database
+      type: external-database-secret
+      properties:
+        secret_name: git-repo-database
+    - name: git-repo-research-mcp-server 
+      type: appmod-service
+      properties:
+        image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/mcp/git-repo-research-mcp-server:latest
+        image_name: git-repo-research-mcp-server
+        port: 8080
+        targetPort: 8080
+        replicas: 1
+      dependsOn:
+        - git-repo-database
+      traits: 
+        - type: path-based-ingress
+          properties:
+            domain: "*.elb.us-west-2.amazonaws.com"
+            rewritePath: true 
+            http:
+              /git-repo-research: 8080
+        - type: storage
+          properties:
+            secret:
+              - name: git-repo-database
+                mountPath: /opt/secret-volume

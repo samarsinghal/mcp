@@ -1,0 +1,32 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: terraform-mcp-server
+spec:
+  components:
+    - name: terraform-database
+      type: external-database-secret
+      properties:
+        secret_name: terraform-database
+    - name: terraform-mcp-server 
+      type: appmod-service
+      properties:
+        image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/mcp/terraform-mcp-server:latest
+        image_name: terraform-mcp-server
+        port: 8080
+        targetPort: 8080
+        replicas: 1
+      dependsOn:
+        - terraform-database
+      traits: 
+        - type: path-based-ingress
+          properties:
+            domain: "*.elb.us-west-2.amazonaws.com"
+            rewritePath: true 
+            http:
+              /terraform: 8080
+        - type: storage
+          properties:
+            secret:
+              - name: terraform-database
+                mountPath: /opt/secret-volume

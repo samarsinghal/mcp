@@ -1,0 +1,98 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: bedrock-kb-retrieval-mcp-server
+spec:
+  components:
+    - name: bedrock-kb-retrieval-mcp-server 
+      type: appmod-service
+      properties:
+        image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/mcp/bedrock-kb-retrieval-mcp-server:latest
+        image_name: bedrock-kb-retrieval-mcp-server
+        port: 8080
+        targetPort: 8080
+        replicas: 1
+        serviceAccountName: bedrock-kb-retrieval-sa
+        # Define AWS region as a configMap reference instead of environment variable
+        # This is more aligned with KubeVela and OAM practices
+        configs:
+          - name: bedrock-kb-config
+            mountPath: /etc/bedrock-kb-config
+        iamPolicyDocument: |
+          {
+            "Version": "2012-10-17",
+            "Statement": [
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "bedrock:ListFoundationModels",
+                  "bedrock:GetFoundationModel",
+                  "bedrock:InvokeModel"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "bedrock-agent:ListKnowledgeBases",
+                  "bedrock-agent:GetKnowledgeBase",
+                  "bedrock-agent:ListDataSources",
+                  "bedrock-agent:ListTagsForResource",
+                  "bedrock-agent:RetrieveAndGenerate"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "bedrock-agent-runtime:Retrieve",
+                  "bedrock-agent-runtime:RetrieveAndGenerate"
+                ],
+                "Resource": "*"
+              },
+              {
+                "Effect": "Allow",
+                "Action": [
+                  "bedrock:InvokeModelWithResponseStream"
+                ],
+                "Resource": "*"
+              }
+            ]
+          }
+      traits: 
+        - type: path-based-ingress
+          properties:
+            domain: "*.elb.us-west-2.amazonaws.com"
+            rewritePath: true 
+            http:
+              /bedrock-kb-retrieval: 8080
+        # Add ConfigMap trait for Bedrock KB configuration
+        - type: config-map
+          properties:
+            name: bedrock-kb-config
+            data:
+              aws-region: "us-west-2"
+              bedrock-kb-reranking-enabled: "true"
+              kb-inclusion-tag-key: "MCP-Enabled"
+        # Add environment variables from ConfigMap
+        - type: env
+          properties:
+            envFrom:
+              - configMapRef:
+                  name: bedrock-kb-config
+            env:
+              - name: AWS_REGION
+                valueFrom:
+                  configMapKeyRef:
+                    name: bedrock-kb-config
+                    key: aws-region
+              - name: BEDROCK_KB_RERANKING_ENABLED
+                valueFrom:
+                  configMapKeyRef:
+                    name: bedrock-kb-config
+                    key: bedrock-kb-reranking-enabled
+              - name: KB_INCLUSION_TAG_KEY
+                valueFrom:
+                  configMapKeyRef:
+                    name: bedrock-kb-config
+                    key: kb-inclusion-tag-key

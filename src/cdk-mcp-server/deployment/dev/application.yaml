@@ -1,0 +1,21 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: cdk-mcp-server
+spec:
+  components:
+    - name: cdk-mcp-server 
+      type: appmod-service
+      properties:
+        image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/mcp/cdk-mcp-server:latest
+        image_name: cdk-mcp-server
+        port: 8080
+        targetPort: 8080
+        replicas: 1
+      traits: 
+        - type: path-based-ingress
+          properties:
+            domain: "*.elb.us-west-2.amazonaws.com"
+            rewritePath: true 
+            http:
+              /cdk: 8080

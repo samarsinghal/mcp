@@ -1,0 +1,32 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: postgres-mcp-server
+spec:
+  components:
+    - name: postgres-database
+      type: external-database-secret
+      properties:
+        secret_name: postgres-database
+    - name: postgres-mcp-server 
+      type: appmod-service
+      properties:
+        image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/mcp/postgres-mcp-server:latest
+        image_name: postgres-mcp-server
+        port: 8080
+        targetPort: 8080
+        replicas: 1
+      dependsOn:
+        - postgres-database
+      traits: 
+        - type: path-based-ingress
+          properties:
+            domain: "*.elb.us-west-2.amazonaws.com"
+            rewritePath: true 
+            http:
+              /postgres: 8080
+        - type: storage
+          properties:
+            secret:
+              - name: postgres-database
+                mountPath: /opt/secret-volume

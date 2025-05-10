@@ -1,0 +1,32 @@
+apiVersion: core.oam.dev/v1beta1
+kind: Application
+metadata:
+  name: cost-analysis-mcp-server
+spec:
+  components:
+    - name: cost-analysis-database
+      type: external-database-secret
+      properties:
+        secret_name: cost-analysis-database
+    - name: cost-analysis-mcp-server 
+      type: appmod-service
+      properties:
+        image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/mcp/cost-analysis-mcp-server:latest
+        image_name: cost-analysis-mcp-server
+        port: 8080
+        targetPort: 8080
+        replicas: 1
+      dependsOn:
+        - cost-analysis-database
+      traits: 
+        - type: path-based-ingress
+          properties:
+            domain: "*.elb.us-west-2.amazonaws.com"
+            rewritePath: true 
+            http:
+              /cost-analysis: 8080
+        - type: storage
+          properties:
+            secret:
+              - name: cost-analysis-database
+                mountPath: /opt/secret-volume
