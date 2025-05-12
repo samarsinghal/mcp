@@ -118,7 +118,34 @@ For detailed instructions on setting up knowledge bases, see:
 
 ## Installation
 
-Here are some ways you can work with MCP across AWS, and we'll be adding support to more products including Amazon Q Developer CLI soon: (e.g. for Amazon Q Developer CLI MCP, `~/.aws/amazonq/mcp.json`):
+### Using with Amazon Q CLI
+
+This MCP server can be used with Amazon Q CLI by configuring it in your `~/.aws/amazonq/mcp.json` file:
+
+```json
+{
+  "mcpServers": {
+    "bedrock-kb-retrieval": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://your-server-endpoint/bedrock-kb-retrieval",
+        "--allow-http",
+        "--transport",
+        "http-only"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}
+```
+
+Replace `http://your-server-endpoint/bedrock-kb-retrieval` with the actual endpoint of your deployed MCP server.
+
+### Local Installation
+
+Here are some ways you can work with MCP across AWS:
 
 ```json
 {
@@ -194,6 +221,23 @@ When deploying the MCP server using the provided `application.yaml` file, the fo
 This configuration approach is compatible with OAM and KubeVela, providing a more robust way to manage configuration compared to environment variables.
 
 You can customize these settings by modifying the `application.yaml` file in the `deployment/dev` directory.
+
+## HTTP Server Implementation
+
+This MCP server implements the Model Context Protocol (MCP) over HTTP and Server-Sent Events (SSE) as described in the [AWS Community article](https://community.aws/content/2eeJZdwNQoUbT4ndQqEmdQveIMT/ai-powered-database-intelligence-remote-mcp-server-for-amazon-q-cli). The server provides the following endpoints:
+
+- `GET /`: Health check endpoint
+- `POST /`: Health check endpoint
+- `GET /sse`: SSE endpoint for establishing a connection
+- `POST /sse`: SSE endpoint for establishing a connection
+- `POST /messages/`: JSON-RPC endpoint for handling messages
+
+The server supports the following JSON-RPC methods:
+
+- `initialize`: Initialize the MCP server
+- `shutdown`: Shutdown the MCP server
+- `resource://knowledgebases`: Discover knowledge bases
+- `QueryKnowledgeBases`: Query knowledge bases
 
 ## Limitations
 

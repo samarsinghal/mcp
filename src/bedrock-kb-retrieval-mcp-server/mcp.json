@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "bedrock-kb-retrieval": {
+      "command": "npx",
+      "args": [
+        "mcp-remote",
+        "http://modernengg-dev-4c1347b0bd2e4e80.elb.us-west-2.amazonaws.com/bedrock-kb-retrieval",
+        "--allow-http",
+        "--transport",
+        "http-only"
+      ],
+      "disabled": false,
+      "autoApprove": []
+    }
+  }
+}

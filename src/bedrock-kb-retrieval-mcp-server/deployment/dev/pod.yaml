@@ -1,0 +1,116 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  creationTimestamp: "2025-05-10T19:53:07Z"
+  generateName: bedrock-kb-retrieval-mcp-server-9c9bbcb6d-
+  labels:
+    app: bedrock-kb-retrieval-mcp-server
+    rollouts-pod-template-hash: 9c9bbcb6d
+  name: bedrock-kb-retrieval-mcp-server-9c9bbcb6d-pk9mp
+  namespace: team-bedrock-kb-retrieval-mcp-server
+  ownerReferences:
+  - apiVersion: apps/v1
+    blockOwnerDeletion: true
+    controller: true
+    kind: ReplicaSet
+    name: bedrock-kb-retrieval-mcp-server-9c9bbcb6d
+    uid: b0306049-5de3-4fc4-a2e4-434a47329576
+  resourceVersion: "2948096"
+  uid: ef597841-73f0-4c40-a669-cac3c58ffe49
+spec:
+  containers:
+  - image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/modengg/bedrock-kb-retrieval-mcp-server:init
+    imagePullPolicy: Always
+    name: bedrock-kb-retrieval-mcp-server
+    ports:
+    - containerPort: 8080
+      protocol: TCP
+    resources: {}
+    terminationMessagePath: /dev/termination-log
+    terminationMessagePolicy: File
+    volumeMounts:
+    - mountPath: /var/run/secrets/kubernetes.io/serviceaccount
+      name: kube-api-access-l5xjz
+      readOnly: true
+  dnsPolicy: ClusterFirst
+  enableServiceLinks: true
+  nodeName: ip-10-0-29-163.us-west-2.compute.internal
+  preemptionPolicy: PreemptLowerPriority
+  priority: 0
+  restartPolicy: Always
+  schedulerName: default-scheduler
+  securityContext: {}
+  serviceAccount: default
+  serviceAccountName: default
+  terminationGracePeriodSeconds: 30
+  tolerations:
+  - effect: NoExecute
+    key: node.kubernetes.io/not-ready
+    operator: Exists
+    tolerationSeconds: 300
+  - effect: NoExecute
+    key: node.kubernetes.io/unreachable
+    operator: Exists
+    tolerationSeconds: 300
+  volumes:
+  - name: kube-api-access-l5xjz
+    projected:
+      defaultMode: 420
+      sources:
+      - serviceAccountToken:
+          expirationSeconds: 3607
+          path: token
+      - configMap:
+          items:
+          - key: ca.crt
+            path: ca.crt
+          name: kube-root-ca.crt
+      - downwardAPI:
+          items:
+          - fieldRef:
+              apiVersion: v1
+              fieldPath: metadata.namespace
+            path: namespace
+status:
+  conditions:
+  - lastProbeTime: null
+    lastTransitionTime: "2025-05-10T19:53:36Z"
+    status: "True"
+    type: PodReadyToStartContainers
+  - lastProbeTime: null
+    lastTransitionTime: "2025-05-10T19:53:07Z"
+    status: "True"
+    type: Initialized
+  - lastProbeTime: null
+    lastTransitionTime: "2025-05-10T19:53:36Z"
+    status: "True"
+    type: Ready
+  - lastProbeTime: null
+    lastTransitionTime: "2025-05-10T19:53:36Z"
+    status: "True"
+    type: ContainersReady
+  - lastProbeTime: null
+    lastTransitionTime: "2025-05-10T19:53:07Z"
+    status: "True"
+    type: PodScheduled
+  containerStatuses:
+  - containerID: containerd://8f74c8fa6f383a8686d751aa24a0262b3dcb441532a399bdfc56b2a14a4bca3c
+    image: 051826708451.dkr.ecr.us-west-2.amazonaws.com/modengg/bedrock-kb-retrieval-mcp-server:init
+    imageID: 051826708451.dkr.ecr.us-west-2.amazonaws.com/modengg/bedrock-kb-retrieval-mcp-server@sha256:5f6358a2e1120f9f4a6ce7db62d97bf8759fe72ae50d738705d05462e7cc3cbc
+    lastState: {}
+    name: bedrock-kb-retrieval-mcp-server
+    ready: true
+    restartCount: 0
+    started: true
+    state:
+      running:
+        startedAt: "2025-05-10T19:53:35Z"
+  hostIP: 10.0.29.163
+  hostIPs:
+  - ip: 10.0.29.163
+  phase: Running
+  podIP: 10.0.31.123
+  podIPs:
+  - ip: 10.0.31.123
+  qosClass: BestEffort
+  startTime: "2025-05-10T19:53:07Z"

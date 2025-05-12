@@ -92,8 +92,8 @@ class TestIAMPermissions:
                 action_name = f"{service}:{action}"
                 assert action_name in service_statement['Action'], f"Missing required action: {action_name}"
 
-    def test_application_yaml_has_config_map_trait(self):
-        """Test that the application.yaml file has the config-map trait."""
+    def test_application_yaml_has_required_configuration(self):
+        """Test that the application.yaml file has the required configuration values."""
         # Get the path to the application.yaml file
         app_yaml_path = os.path.join(
             os.path.dirname(os.path.dirname(__file__)),
@@ -116,23 +116,33 @@ class TestIAMPermissions:
         assert component is not None, "bedrock-kb-retrieval-mcp-server component not found"
         assert 'traits' in component, "Component is missing 'traits' section"
         
-        # Check for config-map trait
-        config_map_trait = None
+        # Check for env trait with direct configuration
+        env_trait = None
         for trait in component['traits']:
-            if trait.get('type') == 'config-map':
-                config_map_trait = trait
+            if trait.get('type') == 'env':
+                env_trait = trait
                 break
         
-        assert config_map_trait is not None, "config-map trait not found"
-        assert 'properties' in config_map_trait, "config-map trait is missing 'properties' section"
-        assert 'name' in config_map_trait['properties'], "config-map trait is missing 'name' property"
-        assert config_map_trait['properties']['name'] == 'bedrock-kb-config', "config-map name should be 'bedrock-kb-config'"
+        assert env_trait is not None, "env trait not found"
+        assert 'properties' in env_trait, "env trait is missing 'properties' section"
+        assert 'env' in env_trait['properties'], "env trait is missing 'env' section"
         
-        # Check for required config data
-        assert 'data' in config_map_trait['properties'], "config-map trait is missing 'data' section"
-        required_configs = ['aws-region', 'bedrock-kb-reranking-enabled', 'kb-inclusion-tag-key']
-        for config in required_configs:
-            assert config in config_map_trait['properties']['data'], f"config-map is missing '{config}' data"
+        # Check for required environment variables with direct values
+        required_env_vars = {
+            'AWS_REGION': 'us-west-2',
+            'BEDROCK_KB_RERANKING_ENABLED': 'true',
+            'KB_INCLUSION_TAG_KEY': 'MCP-Enabled'
+        }
+        
+        for env_var, expected_value in required_env_vars.items():
+            env_var_found = False
+            for env_item in env_trait['properties']['env']:
+                if env_item.get('name') == env_var:
+                    env_var_found = True
+                    assert 'value' in env_item, f"env var '{env_var}' is missing 'value'"
+                    assert env_item['value'] == expected_value, f"env var '{env_var}' should have value '{expected_value}'"
+                    break
+            assert env_var_found, f"Required environment variable '{env_var}' not found"
 
     def test_application_yaml_has_env_trait(self):
         """Test that the application.yaml file has the env trait with proper configuration."""
@@ -168,14 +178,6 @@ class TestIAMPermissions:
         assert env_trait is not None, "env trait not found"
         assert 'properties' in env_trait, "env trait is missing 'properties' section"
         
-        # Check for envFrom section
-        assert 'envFrom' in env_trait['properties'], "env trait is missing 'envFrom' section"
-        assert len(env_trait['properties']['envFrom']) > 0, "env trait has no envFrom items"
-        assert 'configMapRef' in env_trait['properties']['envFrom'][0], "envFrom is missing 'configMapRef'"
-        assert 'name' in env_trait['properties']['envFrom'][0]['configMapRef'], "configMapRef is missing 'name'"
-        assert env_trait['properties']['envFrom'][0]['configMapRef']['name'] == 'bedrock-kb-config', \
-            "configMapRef name should be 'bedrock-kb-config'"
-        
         # Check for env section
         assert 'env' in env_trait['properties'], "env trait is missing 'env' section"
         required_env_vars = ['AWS_REGION', 'BEDROCK_KB_RERANKING_ENABLED', 'KB_INCLUSION_TAG_KEY']
@@ -184,10 +186,6 @@ class TestIAMPermissions:
             for env_item in env_trait['properties']['env']:
                 if env_item.get('name') == env_var:
                     env_var_found = True
-                    assert 'valueFrom' in env_item, f"env var '{env_var}' is missing 'valueFrom'"
-                    assert 'configMapKeyRef' in env_item['valueFrom'], f"env var '{env_var}' is missing 'configMapKeyRef'"
-                    assert 'name' in env_item['valueFrom']['configMapKeyRef'], f"configMapKeyRef for '{env_var}' is missing 'name'"
-                    assert env_item['valueFrom']['configMapKeyRef']['name'] == 'bedrock-kb-config', \
-                        f"configMapKeyRef name for '{env_var}' should be 'bedrock-kb-config'"
+                    assert 'value' in env_item, f"env var '{env_var}' is missing 'value'"
                     break
             assert env_var_found, f"Required environment variable '{env_var}' not found"

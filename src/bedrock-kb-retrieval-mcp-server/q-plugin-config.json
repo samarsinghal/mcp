@@ -1,0 +1,6 @@
+{
+  "mcp": {
+    "endpoint": "http://modern-engg-b42e7433386f63dc.elb.us-west-2.amazonaws.com/bedrock-kb-retrieval",
+    "region": "us-west-2"
+  }
+}
